@@ -18,7 +18,7 @@ curl -X POST http://localhost:8082/chat \
 If you want server‑sent tokens, switch to `/api/generate` with `stream:true` and flush chunks; or upgrade to websockets. This template keeps it simple (single non‑streaming reply) so you can extend as needed.
 
 
-docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+docker exec -it ollama ollama pull gpt-oss:20b
 
 make run
 # หรือ
@@ -60,7 +60,7 @@ docker compose down -v
 docker compose up -d
 
 # 3) ดึงโมเดล (เก็บลง ./models อัตโนมัติ)
-docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+docker exec -it ollama ollama pull gpt-oss:20b
 
 # 4) เข้า devcontainer แล้วรันแอป
 # VS Code: Dev Containers: Reopen in Container
@@ -70,14 +70,14 @@ make run   # หรือ go run ./cmd/server
 
 
 docker compose up -d ollama
-docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+docker exec -it ollama ollama pull gpt-oss:20b
 
 
 
 
-docker exec -it ollama ollama pull gpt-oss-20b
+docker exec -it ollama ollama pull gpt-oss:20b
 
-docker exec -it ollama ollama run gpt-oss-20b "hello"
+docker exec -it ollama ollama run gpt-oss:20b "hello"
 
 docker exec -it ollama ollama list
 

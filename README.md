@@ -1,6 +1,6 @@
 # Go + Dev Container + Ollama (GPT-OSS 20B)
 
-This template wires a small Go HTTP service to an [Ollama](https://ollama.com) model (default: `gpt-oss-20b-q4_K_M`) using Docker.
+This template wires a small Go HTTP service to an [Ollama](https://ollama.com) model (default: `gpt-oss:20b`) using Docker.
 It is designed primarily for Windows 11 users running VS Code Dev Containers, but you can also run the Go binary directly on your
 machine as long as an Ollama container is available.
 
@@ -50,7 +50,7 @@ docker compose up -d ollama
 Download the default model (change the model name if you need another one):
 
 ```powershell
-docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+docker exec -it ollama ollama pull gpt-oss:20b
 ```
 
 > Models are cached under the path configured by `OLLAMA_MODELS_HOST` (defaults to `./models`).
@@ -76,33 +76,7 @@ The server listens on `http://localhost:8082` and talks to the Ollama service vi
 
 #### Option B – Run the binary on the host
 
-1. Ensure Go 1.22+ is installed locally.
-2. Point the service to the Docker-hosted Ollama instance:
-   ```powershell
-   setx OLLAMA_URL http://localhost:11434
-   ```
-   (On PowerShell for the current session only, use `$env:OLLAMA_URL = "http://localhost:11434"`).
-3. (Optional) Choose a different model: `setx OLLAMA_MODEL llama3` or `$env:OLLAMA_MODEL = "llama3"`.
-4. Launch the server from the project root:
-   ```powershell
-   go mod tidy
-   go run .\cmd\server
-   ```
-
-The service still listens on port `8082`; only the upstream URL changes.
-
-### 4. Call the API
-
-Once the server is running you can send prompts to `/chat`.
-
-**macOS / Linux / WSL / Git Bash**
-
-```sh
-curl -X POST http://localhost:8082/chat \ 
-  -H "Content-Type: application/json" \ 
-  -d '{"prompt":"สวัสดี"}'
-```
-
+@@ -106,51 +106,51 @@ curl -X POST http://localhost:8082/chat \
 **Windows Command Prompt / PowerShell**
 
 ```powershell
@@ -128,7 +102,7 @@ docker compose down -v
 | Variable | Default | Where it lives | Description |
 |----------|---------|----------------|-------------|
 | `OLLAMA_URL` | `http://ollama:11434` | `cmd/server/main.go` | Endpoint used by the Go service to talk to Ollama. Override with `http://localhost:11434` if you run the server on the host. |
-| `OLLAMA_MODEL` | `gpt-oss-20b-q4_K_M` | `docker-compose.yml`, Go server | Model pulled on first start and used for chat requests. |
+| `OLLAMA_MODEL` | `gpt-oss:20b` | `docker-compose.yml`, Go server | Model pulled on first start and used for chat requests. |
 | `OLLAMA_MODELS_HOST` | `./models` | `docker-compose.yml` | Host path mounted into the Ollama container to store downloaded models. |
 
 You can add a `.env` file next to `docker-compose.yml` to override any of these variables.

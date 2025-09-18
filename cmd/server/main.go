@@ -27,7 +27,7 @@ type chatClient interface {
 
 func main() {
 	ollamaURL := getenv("OLLAMA_URL", "http://ollama:11434")
-	model := getenv("OLLAMA_MODEL", "gpt-oss-20b-q4_K_M")
+	model := getenv("OLLAMA_MODEL", "gpt-oss:20b")
 
 	client := ollama.New(ollamaURL)
 

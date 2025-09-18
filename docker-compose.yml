@@ -19,7 +19,7 @@ services:
     platform: linux/arm64
     environment:
       - OLLAMA_URL=http://ollama:11434
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-gpt-oss-20b-q4_K_M}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-gpt-oss:20b}
       - GOFLAGS=-buildvcs=false
     volumes:
       - .:/workspaces/ollama-go-devcontainer
