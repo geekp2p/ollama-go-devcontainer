@@ -107,6 +107,15 @@ docker compose up -d
 
 docker exec -it ollama ollama list
 
-curl.exe -X POST http://localhost:8082/chat -H "Content-Type: application/json" -d "{\"prompt\":\"สวัสดี\"}"}"
+curl.exe -X POST http://localhost:8082/chat -H "Content-Type: application/json" -d "{\"prompt\":\"สวัสดี\"}"
+
 
 docker compose exec go-app sh
+
+docker compose up -d
+
+docker compose exec app sh
+
+docker exec -it go-app sh
+
+go run ./cmd/server
