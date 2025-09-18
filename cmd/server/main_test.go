@@ -101,6 +101,23 @@ func TestChatHandler_EmptyPrompt(t *testing.T) {
 	}
 }
 
+func TestChatHandler_InvalidJSONTrailingData(t *testing.T) {
+	client := &stubChatClient{}
+	handler := newChatHandler(client, "test-model")
+
+	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(`{"prompt":"hello"}}`))
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected status 400, got %d", rec.Code)
+	}
+	if client.callCount != 0 {
+		t.Fatalf("expected Chat not to be called, got %d", client.callCount)
+	}
+}
+
 func TestChatHandler_UpstreamError(t *testing.T) {
 	client := &stubChatClient{err: errors.New("boom")}
 	handler := newChatHandler(client, "test-model")

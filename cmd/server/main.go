@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -57,8 +58,14 @@ func newChatHandler(client chatClient, model string) http.HandlerFunc {
 
 		defer r.Body.Close()
 
+		dec := json.NewDecoder(r.Body)
+
 		var payload chatPayload
-		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		if err := dec.Decode(&payload); err != nil {
+			http.Error(w, "invalid JSON payload", http.StatusBadRequest)
+			return
+		}
+		if err := dec.Decode(&struct{}{}); err != io.EOF {
 			http.Error(w, "invalid JSON payload", http.StatusBadRequest)
 			return
 		}
