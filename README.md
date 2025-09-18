@@ -104,6 +104,7 @@ docker compose down -v
 | `OLLAMA_URL` | `http://ollama:11434` | `cmd/server/main.go` | Endpoint used by the Go service to talk to Ollama. Override with `http://localhost:11434` if you run the server on the host. |
 | `OLLAMA_MODEL` | `gpt-oss:20b` | `docker-compose.yml`, Go server | Model pulled on first start and used for chat requests. |
 | `OLLAMA_MODELS_HOST` | `./models` | `docker-compose.yml` | Host path mounted into the Ollama container to store downloaded models. |
+| `OLLAMA_TIMEOUT` | `2m` | Go server | Maximum time the server waits for Ollama to answer. Accepts [Go duration strings](https://pkg.go.dev/time#ParseDuration). |
 
 You can add a `.env` file next to `docker-compose.yml` to override any of these variables.
 
@@ -130,8 +131,8 @@ The server enforces a two-minute timeout per request. Failed upstream calls retu
 
 ## Troubleshooting
 
-- `context deadline exceeded` – the Go service could not reach Ollama. Ensure the `ollama` container is running and the `OLLAMA_URL`
-  matches your setup.
+- `context deadline exceeded` – the Go service could not reach Ollama before the timeout elapsed. Ensure the `ollama` container is running,
+  the `OLLAMA_URL` matches your setup, and increase `OLLAMA_TIMEOUT` if the model needs longer than two minutes to answer.
 - `model not found` – pull the model first (`docker exec -it ollama ollama pull <model>`), or update `OLLAMA_MODEL` to one that exists locally.
 - Permission errors when pulling models on Windows – check that the folder bound via `OLLAMA_MODELS_HOST` is writable from WSL/Docker.
 

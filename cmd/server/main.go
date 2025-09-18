@@ -13,6 +13,8 @@ import (
 	"ollama-go-devcontainer/internal/ollama"
 )
 
+const defaultTimeout = 2 * time.Minute
+
 type chatPayload struct {
 	Prompt string `json:"prompt"`
 }
@@ -28,15 +30,16 @@ type chatClient interface {
 func main() {
 	ollamaURL := getenv("OLLAMA_URL", "http://ollama:11434")
 	model := getenv("OLLAMA_MODEL", "gpt-oss:20b")
+	timeout := parseTimeout(getenv("OLLAMA_TIMEOUT", ""))
 
-	client := ollama.New(ollamaURL)
+	client := ollama.New(ollamaURL, timeout)
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 	})
 
-	http.HandleFunc("/chat", newChatHandler(client, model))
+	http.HandleFunc("/chat", newChatHandler(client, model, timeout))
 
 	log.Println("Server on :8082 → /chat POST {prompt}")
 	log.Fatal(http.ListenAndServe(":8082", nil))
@@ -49,7 +52,24 @@ func getenv(k, def string) string {
 	return def
 }
 
-func newChatHandler(client chatClient, model string) http.HandlerFunc {
+func parseTimeout(value string) time.Duration {
+	if strings.TrimSpace(value) == "" {
+		return defaultTimeout
+	}
+
+	d, err := time.ParseDuration(value)
+	if err != nil {
+		log.Printf("invalid OLLAMA_TIMEOUT %q: %v; using default %s", value, err, defaultTimeout)
+		return defaultTimeout
+	}
+	if d <= 0 {
+		log.Printf("invalid OLLAMA_TIMEOUT %q: must be >0; using default %s", value, defaultTimeout)
+		return defaultTimeout
+	}
+	return d
+}
+
+func newChatHandler(client chatClient, model string, timeout time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -74,7 +94,7 @@ func newChatHandler(client chatClient, model string) http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
 
 		resp, err := client.Chat(ctx, ollama.ChatRequest{

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"ollama-go-devcontainer/internal/ollama"
 )
@@ -34,7 +35,7 @@ func TestChatHandler_Success(t *testing.T) {
 		},
 	}
 
-	handler := newChatHandler(client, "test-model")
+	handler := newChatHandler(client, "test-model", defaultTimeout)
 	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(`{"prompt":"hi"}`))
 	rec := httptest.NewRecorder()
 
@@ -69,7 +70,7 @@ func TestChatHandler_Success(t *testing.T) {
 
 func TestChatHandler_InvalidJSON(t *testing.T) {
 	client := &stubChatClient{}
-	handler := newChatHandler(client, "test-model")
+	handler := newChatHandler(client, "test-model", defaultTimeout)
 
 	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader("not-json"))
 	rec := httptest.NewRecorder()
@@ -86,7 +87,7 @@ func TestChatHandler_InvalidJSON(t *testing.T) {
 
 func TestChatHandler_EmptyPrompt(t *testing.T) {
 	client := &stubChatClient{}
-	handler := newChatHandler(client, "test-model")
+	handler := newChatHandler(client, "test-model", defaultTimeout)
 
 	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(`{"prompt":"   "}`))
 	rec := httptest.NewRecorder()
@@ -103,7 +104,7 @@ func TestChatHandler_EmptyPrompt(t *testing.T) {
 
 func TestChatHandler_InvalidJSONTrailingData(t *testing.T) {
 	client := &stubChatClient{}
-	handler := newChatHandler(client, "test-model")
+	handler := newChatHandler(client, "test-model", defaultTimeout)
 
 	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(`{"prompt":"hello"}}`))
 	rec := httptest.NewRecorder()
@@ -120,7 +121,7 @@ func TestChatHandler_InvalidJSONTrailingData(t *testing.T) {
 
 func TestChatHandler_UpstreamError(t *testing.T) {
 	client := &stubChatClient{err: errors.New("boom")}
-	handler := newChatHandler(client, "test-model")
+	handler := newChatHandler(client, "test-model", defaultTimeout)
 
 	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(`{"prompt":"hi"}`))
 	rec := httptest.NewRecorder()
@@ -137,7 +138,7 @@ func TestChatHandler_UpstreamError(t *testing.T) {
 
 func TestChatHandler_MethodNotAllowed(t *testing.T) {
 	client := &stubChatClient{}
-	handler := newChatHandler(client, "test-model")
+	handler := newChatHandler(client, "test-model", defaultTimeout)
 
 	req := httptest.NewRequest(http.MethodGet, "/chat", nil)
 	rec := httptest.NewRecorder()
@@ -149,5 +150,33 @@ func TestChatHandler_MethodNotAllowed(t *testing.T) {
 	}
 	if client.callCount != 0 {
 		t.Fatalf("expected Chat not to be called, got %d", client.callCount)
+	}
+}
+
+func TestParseTimeout(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input string
+		want  time.Duration
+	}{
+		{name: "empty", input: "", want: defaultTimeout},
+		{name: "spaces", input: "   ", want: defaultTimeout},
+		{name: "valid", input: "5m", want: 5 * time.Minute},
+		{name: "invalid", input: "nope", want: defaultTimeout},
+		{name: "negative", input: "-1m", want: defaultTimeout},
+		{name: "zero", input: "0", want: defaultTimeout},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := parseTimeout(tt.input); got != tt.want {
+				t.Fatalf("parseTimeout(%q) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
 	}
 }

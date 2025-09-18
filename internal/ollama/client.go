@@ -2,6 +2,7 @@ package ollama
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/carlmjohnson/requests"
@@ -33,12 +34,22 @@ type ChatResponse struct {
 // Client is a tiny wrapper over Ollama HTTP API.
 
 type Client struct {
-	BaseURL string
-	Timeout time.Duration
+	BaseURL    string
+	Timeout    time.Duration
+	httpClient *http.Client
 }
 
-func New(baseURL string) *Client {
-	return &Client{BaseURL: baseURL, Timeout: 120 * time.Second}
+func New(baseURL string, timeout time.Duration) *Client {
+	if timeout <= 0 {
+		timeout = 120 * time.Second
+	}
+	return &Client{
+		BaseURL: baseURL,
+		Timeout: timeout,
+		httpClient: &http.Client{
+			Timeout: timeout,
+		},
+	}
 }
 
 func (c *Client) Chat(ctx context.Context, req ChatRequest) (ChatResponse, error) {
@@ -48,7 +59,7 @@ func (c *Client) Chat(ctx context.Context, req ChatRequest) (ChatResponse, error
 		BodyJSON(req).
 		ToJSON(&out).
 		CheckStatus(200).
-		Client(nil).
+		Client(c.httpClient).
 		Fetch(ctx)
 	return out, err
 }
