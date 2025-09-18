@@ -1,0 +1,31 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    platform: linux/arm64
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    ports:
+      - "11434:11434"
+    volumes:
+      - "${OLLAMA_MODELS_HOST:-./models}:/root/.ollama"
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: go-app
+    platform: linux/arm64
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-gpt-oss-20b-q4_K_M}
+      - GOFLAGS=-buildvcs=false
+    volumes:
+      - .:/workspaces/ollama-go-devcontainer
+    working_dir: /workspaces/ollama-go-devcontainer
+    depends_on:
+      - ollama
+    ports:
+      - "8082:8082"
+    command: sleep infinity

@@ -1,0 +1,110 @@
+curl -X POST http://localhost:8082/chat \
+-H "Content-Type: application/json" \
+-d '{"prompt":"สรุปแนวคิดของ Expected Value ในการลงทุนหน่อย"}'
+
+
+
+---
+
+
+## How to use with your own repo name
+- Search/replace `github.com/yourname/ollama-go-devcontainer` in `go.mod` and imports.
+
+
+---
+
+
+## Bonus: simple streaming (optional)
+If you want server‑sent tokens, switch to `/api/generate` with `stream:true` and flush chunks; or upgrade to websockets. This template keeps it simple (single non‑streaming reply) so you can extend as needed.
+
+
+docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+
+make run
+# หรือ
+go run ./cmd/server
+
+
+curl -X POST http://localhost:8082/chat \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"สรุป Expected Value ในการลงทุนหน่อย"}'
+
+
+
+
+
+# นอกคอนเทนเนอร์ (Windows/PowerShell)
+docker compose down -v
+
+# VS Code
+F1 → Dev Containers: Rebuild and Reopen in Container (เลือก no cache)
+
+# ในคอนเทนเนอร์ app
+go mod tidy
+make run      # หรือ go run ./cmd/server
+
+# ทดสอบจาก host
+curl -X POST http://localhost:8082/chat ^
+  -H "Content-Type: application/json" ^
+  -d "{\"prompt\":\"สรุป Expected Value แบบสั้นๆ\"}"
+
+
+
+# 0) สร้างโฟลเดอร์โมเดลในโปรเจกต์
+mkdir models
+
+# 1) ปิดของเดิมถ้ามี
+docker compose down -v
+
+# 2) เปิดใหม่
+docker compose up -d
+
+# 3) ดึงโมเดล (เก็บลง ./models อัตโนมัติ)
+docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+
+# 4) เข้า devcontainer แล้วรันแอป
+# VS Code: Dev Containers: Reopen in Container
+go mod tidy
+make run   # หรือ go run ./cmd/server
+
+
+
+docker compose up -d ollama
+docker exec -it ollama ollama pull gpt-oss-20b-q4_K_M
+
+
+
+
+docker exec -it ollama ollama pull gpt-oss-20b
+
+docker exec -it ollama ollama run gpt-oss-20b "hello"
+
+docker exec -it ollama ollama list
+
+docker compose up -d app
+curl -X POST http://localhost:8082/chat -H "Content-Type: application/json" -d "{\"prompt\":\"สวัสดี\"}"
+
+
+docker compose up -d ollama
+
+docker exec -it ollama ollama pull gpt-oss:20b
+
+wsl --shutdown
+
+Get-Process "Docker Desktop" -ErrorAction SilentlyContinue | Stop-Process -Force
+
+docker context ls
+docker context use default   # หรือ desktop-linux ถ้ามี
+docker version               # ต้องเห็นทั้ง Client/Server
+
+
+
+
+cd C:\ollama-go-devcontainer
+docker compose build --no-cache app
+docker compose up -d
+
+
+docker exec -it ollama ollama list
+
+curl.exe -X POST http://localhost:8082/chat -H "Content-Type: application/json" -d "{\"prompt\":\"สวัสดี\"}"
