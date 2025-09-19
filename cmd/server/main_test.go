@@ -85,6 +85,23 @@ func TestChatHandler_InvalidJSON(t *testing.T) {
 	}
 }
 
+func TestChatHandler_CustomModel(t *testing.T) {
+	client := &stubChatClient{}
+	handler := newChatHandler(client, "default-model", defaultTimeout)
+
+	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(`{"prompt":"hi","model":" openthaigpt1.5-7b-instruct "}`))
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rec.Code)
+	}
+	if client.lastReq.Model != "openthaigpt1.5-7b-instruct" {
+		t.Fatalf("expected model override, got %q", client.lastReq.Model)
+	}
+}
+
 func TestChatHandler_EmptyPrompt(t *testing.T) {
 	client := &stubChatClient{}
 	handler := newChatHandler(client, "test-model", defaultTimeout)

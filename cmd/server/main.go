@@ -17,6 +17,7 @@ const defaultTimeout = 2 * time.Minute
 
 type chatPayload struct {
 	Prompt string `json:"prompt"`
+	Model  string `json:"model,omitempty"`
 }
 
 type chatReply struct {
@@ -97,8 +98,13 @@ func newChatHandler(client chatClient, model string, timeout time.Duration) http
 		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
 
+		selectedModel := model
+		if trimmed := strings.TrimSpace(payload.Model); trimmed != "" {
+			selectedModel = trimmed
+		}
+
 		resp, err := client.Chat(ctx, ollama.ChatRequest{
-			Model:  model,
+			Model:  selectedModel,
 			Stream: false,
 			Messages: []ollama.ChatMessage{
 				{Role: "system", Content: "You are a helpful assistant."},

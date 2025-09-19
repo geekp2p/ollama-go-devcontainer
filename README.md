@@ -53,6 +53,13 @@ Download the default model (change the model name if you need another one):
 docker exec -it ollama ollama pull gpt-oss:20b
 ```
 
+> Want Thai-centric models? Pull the new [OpenThaiGPT 1.5 Instruct](https://openthaigpt.aieat.or.th) variants before calling the API:
+>
+> ```powershell
+> docker exec -it ollama ollama pull openthaigpt1.5-7b-instruct
+> docker exec -it ollama ollama pull openthaigpt1.5-14b-instruct
+> ```
+
 > Models are cached under the path configured by `OLLAMA_MODELS_HOST` (defaults to `./models`).
 
 ### 3. Run the Go API
@@ -77,17 +84,7 @@ The server listens on `http://localhost:8082` and talks to the Ollama service vi
 #### Option B – Run the binary on the host
 
 @@ -106,51 +106,51 @@ curl -X POST http://localhost:8082/chat \
-**Windows Command Prompt / PowerShell**
-
-```powershell
-curl.exe -X POST http://localhost:8082/chat ^
-  -H "Content-Type: application/json" ^
-  -d "{\"prompt\":\"วันนี้วันที่เท่าไหร่วันอะไร\"}"
-```
-
-The API responds with JSON in the form `{"reply":"..."}`.
-
-### 5. Tear everything down
+@@ -91,49 +98,50 @@ The API responds with JSON in the form `{"reply":"..."}`.
 
 When you are done, stop the containers. Adding `-v` removes the model cache as well.
 
@@ -114,7 +111,8 @@ You can add a `.env` file next to `docker-compose.yml` to override any of these 
 
 - `GET /healthz` – returns `200 OK` with body `ok`. Useful for probes.
 - `POST /chat` – request body must be JSON with a `prompt` field (non-empty string).
-  - Example request: `{ "prompt": "สรุป Expected Value ในการลงทุนหน่อย" }`
+  - Optional `model` field lets you override the default per call (e.g. `openthaigpt1.5-7b-instruct`).
+  - Example request: `{ "prompt": "สรุป Expected Value ในการลงทุนหน่อย", "model": "openthaigpt1.5-14b-instruct" }`
   - Example response: `{ "reply": "..." }`
 
 The server enforces a two-minute timeout per request. Failed upstream calls return `502 Bad Gateway` with the Ollama error message.
