@@ -31,8 +31,14 @@ type chatClient interface {
 
 func main() {
 	ollamaURL := getenv("OLLAMA_URL", "http://ollama:11434")
-	model := getenv("OLLAMA_MODEL", "gpt-oss:20b")
+	envModel := getenv("OLLAMA_MODEL", "gpt-oss:20b")
+	allowedModels := parseModelList(getenv("OLLAMA_ALLOWED_MODELS", ""))
 	timeout := parseTimeout(getenv("OLLAMA_TIMEOUT", ""))
+
+	model := chooseDefaultModel(envModel, allowedModels)
+	if len(allowedModels) > 0 && model != strings.TrimSpace(envModel) {
+		log.Printf("default model %q not in OLLAMA_ALLOWED_MODELS; using %q instead", envModel, model)
+	}
 
 	client := ollama.New(ollamaURL, timeout)
 
@@ -41,7 +47,7 @@ func main() {
 		w.Write([]byte("ok"))
 	})
 
-	http.HandleFunc("/chat", newChatHandler(client, model, timeout))
+	http.HandleFunc("/chat", newChatHandler(client, model, timeout, allowedModels))
 
 	log.Println("Server on :8082 → /chat POST {prompt}")
 	log.Fatal(http.ListenAndServe(":8082", nil))
@@ -71,7 +77,7 @@ func parseTimeout(value string) time.Duration {
 	return d
 }
 
-func newChatHandler(client chatClient, model string, timeout time.Duration) http.HandlerFunc {
+func newChatHandler(client chatClient, model string, timeout time.Duration, allowedModels []string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -104,6 +110,17 @@ func newChatHandler(client chatClient, model string, timeout time.Duration) http
 			selectedModel = trimmed
 		}
 
+		if len(allowedModels) > 0 && !containsModel(allowedModels, selectedModel) {
+			message := "model not allowed"
+			if len(allowedModels) == 1 {
+				message = "model not allowed: use " + allowedModels[0]
+			} else {
+				message = "model not allowed: use one of " + strings.Join(allowedModels, ", ")
+			}
+			http.Error(w, message, http.StatusBadRequest)
+			return
+		}
+
 		resp, err := client.Chat(ctx, ollama.ChatRequest{
 			Model:  selectedModel,
 			Stream: false,
@@ -132,4 +149,42 @@ func newChatHandler(client chatClient, model string, timeout time.Duration) http
 			log.Printf("failed to write response: %v", err)
 		}
 	}
+}
+
+func parseModelList(value string) []string {
+	parts := strings.Split(value, ",")
+	var models []string
+	seen := make(map[string]struct{})
+	for _, part := range parts {
+		name := strings.TrimSpace(part)
+		if name == "" {
+			continue
+		}
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		seen[name] = struct{}{}
+		models = append(models, name)
+	}
+	return models
+}
+
+func chooseDefaultModel(base string, allowed []string) string {
+	trimmed := strings.TrimSpace(base)
+	if len(allowed) == 0 {
+		return trimmed
+	}
+	if trimmed != "" && containsModel(allowed, trimmed) {
+		return trimmed
+	}
+	return allowed[0]
+}
+
+func containsModel(models []string, candidate string) bool {
+	for _, m := range models {
+		if m == candidate {
+			return true
+		}
+	}
+	return false
 }
