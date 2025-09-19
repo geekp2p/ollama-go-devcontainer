@@ -66,6 +66,30 @@ func TestChatHandler_Success(t *testing.T) {
 	if client.lastReq.Messages[1].Content != "hi" {
 		t.Fatalf("expected user prompt 'hi', got %q", client.lastReq.Messages[1].Content)
 	}
+	if len(client.lastReq.Messages[1].Images) != 0 {
+		t.Fatalf("expected no images in default request, got %v", client.lastReq.Messages[1].Images)
+	}
+}
+
+func TestChatHandler_WithImages(t *testing.T) {
+	client := &stubChatClient{}
+	handler := newChatHandler(client, "vision-model", defaultTimeout)
+
+	body := `{"prompt":"what's in the photo?","images":["aGVsbG8=","d29ybGQ="]}`
+	req := httptest.NewRequest(http.MethodPost, "/chat", strings.NewReader(body))
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rec.Code)
+	}
+	if client.callCount != 1 {
+		t.Fatalf("expected Chat to be called once, got %d", client.callCount)
+	}
+	if got := client.lastReq.Messages[1].Images; len(got) != 2 || got[0] != "aGVsbG8=" || got[1] != "d29ybGQ=" {
+		t.Fatalf("expected images to be forwarded, got %v", got)
+	}
 }
 
 func TestChatHandler_InvalidJSON(t *testing.T) {

@@ -60,6 +60,14 @@ docker exec -it ollama ollama pull gpt-oss:20b
 > docker exec -it ollama ollama pull openthaigpt1.5-14b-instruct
 > ```
 
+> Exploring multimodal models? Pull the new vision-capable releases to experiment with images alongside text:
+>
+> ```powershell
+> docker exec -it ollama ollama pull llama3.2-vision:11b
+> docker exec -it ollama ollama pull internvl2
+> docker exec -it ollama ollama pull internvl2.5
+> ```
+
 > Models are cached under the path configured by `OLLAMA_MODELS_HOST` (defaults to `./models`).
 
 ### 3. Run the Go API
@@ -111,8 +119,18 @@ You can add a `.env` file next to `docker-compose.yml` to override any of these 
 
 - `GET /healthz` – returns `200 OK` with body `ok`. Useful for probes.
 - `POST /chat` – request body must be JSON with a `prompt` field (non-empty string).
-  - Optional `model` field lets you override the default per call (e.g. `openthaigpt1.5-7b-instruct`).
-  - Example request: `{ "prompt": "สรุป Expected Value ในการลงทุนหน่อย", "model": "openthaigpt1.5-14b-instruct" }`
+  - Optional `model` field lets you override the default per call (e.g. `openthaigpt1.5-7b-instruct`, `llama3.2-vision:11b`, `internvl2.5`).
+  - Optional `images` array accepts Base64-encoded image strings for multimodal models such as Llama 3.2 Vision and InternVL.
+  - Example request:
+
+    ```json
+    {
+      "prompt": "ช่วยอธิบายภาพนี้หน่อย",
+      "model": "llama3.2-vision:11b",
+      "images": ["<base64-encoded-image>"]
+    }
+    ```
+  - Text-only example: `{ "prompt": "สรุป Expected Value ในการลงทุนหน่อย", "model": "openthaigpt1.5-14b-instruct" }`
   - Example response: `{ "reply": "..." }`
 
 The server enforces a two-minute timeout per request. Failed upstream calls return `502 Bad Gateway` with the Ollama error message.

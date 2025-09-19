@@ -16,8 +16,9 @@ import (
 const defaultTimeout = 2 * time.Minute
 
 type chatPayload struct {
-	Prompt string `json:"prompt"`
-	Model  string `json:"model,omitempty"`
+	Prompt string   `json:"prompt"`
+	Model  string   `json:"model,omitempty"`
+	Images []string `json:"images,omitempty"`
 }
 
 type chatReply struct {
@@ -108,7 +109,7 @@ func newChatHandler(client chatClient, model string, timeout time.Duration) http
 			Stream: false,
 			Messages: []ollama.ChatMessage{
 				{Role: "system", Content: "You are a helpful assistant."},
-				{Role: "user", Content: payload.Prompt},
+				{Role: "user", Content: payload.Prompt, Images: payload.Images},
 			},
 		})
 		if err != nil {
