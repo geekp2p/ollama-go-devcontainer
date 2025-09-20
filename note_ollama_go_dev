@@ -119,3 +119,12 @@ docker compose exec app sh
 docker exec -it go-app sh
 
 go run ./cmd/server
+
+docker compose up -d ollama
+docker exec -it ollama ollama pull gpt-oss:20b
+
+docker exec -it ollama ollama pull openthaigpt1.5-7b-instruct
+docker exec -it ollama ollama pull openthaigpt1.5-14b-instruct
+docker exec -it ollama ollama pull llama3.2-vision:11b
+docker exec -it ollama ollama pull internvl2
+docker exec -it ollama ollama pull internvl2.5
