@@ -145,6 +145,5 @@ docker exec -it ollama ollama run promptnow/openthaigpt1.5-14b-instruct-q4_k_m "
 docker exec -it ollama ollama run llama3.2-vision:11b "แนะนำตัวหน่อย"
 docker exec -it ollama ollama run gpt-oss:20b "อธิบายเรื่องดอกกุหลาบ"
 
-docker exec -it ollama ollama run llama3.2-vision:11b \
-  --image /path/in/container/photo.jpg \
-  "อธิบายภาพนี้ให้หน่อย"
+docker exec -it ollama ollama run llama3.2-vision:11b "อธิบายภาพนี้ให้หน่อย ./img/vision_test.jpg"
+
