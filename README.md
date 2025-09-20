@@ -68,6 +68,12 @@ docker exec -it ollama ollama pull gpt-oss:20b
 > docker exec -it ollama ollama pull internvl2.5
 > ```
 
+> Need a single-line run command once the model is available?
+>
+> ```powershell
+> docker exec -it ollama ollama run llama3.2-vision:11b --image /path/in/container/photo.jpg "อธิบายภาพนี้ให้หน่อย"
+> ```
+
 > Models are cached under the path configured by `OLLAMA_MODELS_HOST` (defaults to `./models`).
 
 ### 3. Run the Go API
@@ -141,6 +147,14 @@ default when requests omit the `model` field, and other values will be rejected 
     ```
   - Text-only example: `{ "prompt": "สรุป Expected Value ในการลงทุนหน่อย", "model": "openthaigpt1.5-14b-instruct" }`
   - Example response: `{ "reply": "..." }`
+
+Need a one-liner for quick tests? Run:
+
+```sh
+curl -X POST http://localhost:8082/chat -H "Content-Type: application/json" -d '{"prompt":"สรุป Expected Value ในการลงทุนหน่อย"}'
+```
+
+PowerShell users can swap in backticks `` ` `` instead of the backslashes (`\`) if they prefer a multi-line format.
 
 The server enforces a two-minute timeout per request. Failed upstream calls return `502 Bad Gateway` with the Ollama error message.
 

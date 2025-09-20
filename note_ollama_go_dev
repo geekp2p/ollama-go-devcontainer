@@ -130,3 +130,21 @@ docker exec -it ollama ollama pull promptnow/openthaigpt1.5-14b-instruct-q4_k_m
 docker exec -it ollama ollama pull llama3.2-vision:11b
 docker exec -it ollama ollama pull internvl2
 docker exec -it ollama ollama pull internvl2.5
+
+
+C:\ollama-go-devcontainer>docker exec -it ollama ollama list
+NAME                                                   ID              SIZE      MODIFIED
+llama3.2-vision:11b                                    6f2f9757ae97    7.8 GB    3 hours ago
+promptnow/openthaigpt1.5-14b-instruct-q4_k_m:latest    e970d4406978    9.0 GB    4 hours ago
+gpt-oss:20b                                            aa4295ac10c3    13 GB     6 hours ago
+
+C:\ollama-go-devcontainer>
+
+docker exec -it ollama ollama run promptnow/openthaigpt1.5-14b-instruct-q4_k_m "สวัสดี"
+
+docker exec -it ollama ollama run llama3.2-vision:11b "แนะนำตัวหน่อย"
+docker exec -it ollama ollama run gpt-oss:20b "อธิบายเรื่องดอกกุหลาบ"
+
+docker exec -it ollama ollama run llama3.2-vision:11b \
+  --image /path/in/container/photo.jpg \
+  "อธิบายภาพนี้ให้หน่อย"

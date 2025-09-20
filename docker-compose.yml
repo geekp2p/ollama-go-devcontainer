@@ -2,7 +2,6 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
-    platform: linux/arm64
     environment:
       - OLLAMA_HOST=0.0.0.0
     ports:
@@ -16,7 +15,6 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
     container_name: go-app
-    platform: linux/arm64
     environment:
       - OLLAMA_URL=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-gpt-oss:20b}
